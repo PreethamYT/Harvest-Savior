@@ -1,6 +1,6 @@
-Harvest-Savior/ (This is the Git Repo)
-├── .gitignore
-├── README.md
-├── ai_engine/
-│   └── requirements.txt
-└── web_platform/
+flask==3.0.0
+flask-cors==4.0.0
+tensorflow==2.15.0
+numpy==1.26.2
+Pillow==10.1.0
+requests==2.31.0
