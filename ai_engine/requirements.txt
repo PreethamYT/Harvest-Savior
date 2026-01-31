@@ -1,0 +1,6 @@
+Harvest-Savior/ (This is the Git Repo)
+├── .gitignore
+├── README.md
+├── ai_engine/
+│   └── requirements.txt
+└── web_platform/

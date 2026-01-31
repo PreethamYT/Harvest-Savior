@@ -1,0 +1,26 @@
+# --- Python (AI Engine) ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+ai_engine/dataset/
+ai_engine/model/*.h5
+ai_engine/model/*.pkl
+
+# --- Java (Web Platform) ---
+.mvn/
+mvnw
+mvnw.cmd
+.classpath
+.project
+.settings/
+target/
+*.class
+*.jar
+*.war
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.DS_Store
