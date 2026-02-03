@@ -4,6 +4,8 @@ from flask import Flask, jsonify
 # Initialize the Flask application
 app = Flask(__name__)
 
+#hello
+
 # Route 1: The Health Check
 # This lets us verify if the Python server is running without doing any complex AI yet.
 @app.route('/', methods=['GET'])
