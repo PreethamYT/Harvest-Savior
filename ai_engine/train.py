@@ -2,12 +2,15 @@
 train.py
 --------
 Milestone 1.2: The Intelligence (Model Training)
-Trains a CNN on potato disease images and saves harvest_model.h5
+Trains a CNN on multi-crop disease images and saves harvest_model.h5
 
 Architecture:
-  - 3 Convolutional blocks (32→64→128 filters)
-  - MaxPooling + Dropout for regularization
-  - Dense layers → Softmax (3 classes)
+  - 4 Deep Convolutional blocks (32→64→128→256 filters, 2 conv per block)
+  - BatchNormalization + MaxPooling + Dropout for regularization
+  - Dense layers (512→256) → Softmax classification
+  - Advanced data augmentation (rotation, shear, flip, zoom, brightness)
+  - Learning rate scheduling for optimal convergence
+  - Target: 99.35%+ accuracy
 
 Run:
     python train.py
