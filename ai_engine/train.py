@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 # ===================== CONFIG =====================
 BASE_DIR = os.path.join(os.path.dirname(__file__), "Dataset")
@@ -26,13 +26,13 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "harvest_model.h5")
 
 IMG_SIZE = 256
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 30  # Extended training for 99.35%+ target
 # Auto-detect number of classes from dataset folders
 CLASSES = len([d for d in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR, d))])
 
-print("🌱 Harvest Savior — Multi-Crop Disease Detection Model")
+print("🌱 Harvest Savior — Custom CNN Model")
 print("="*60)
-print(f"Training on {CLASSES} disease classes")
+print(f"Training on {CLASSES} disease classes | Target: 99%+ accuracy")
 
 # ===================== DATA LOADING =====================
 print("\n[1/4] Loading Dataset...")
@@ -41,11 +41,15 @@ print("\n[1/4] Loading Dataset...")
 train_datagen = ImageDataGenerator(
     rescale=1./255,           # Normalize pixel values [0,1]
     validation_split=0.2,     # 80% train, 20% validation
-    rotation_range=20,
+    rotation_range=25,
     width_shift_range=0.2,
     height_shift_range=0.2,
+    shear_range=0.2,
     horizontal_flip=True,
-    zoom_range=0.2
+    vertical_flip=True,
+    zoom_range=0.25,
+    brightness_range=[0.8, 1.2],
+    fill_mode='nearest'
 )
 
 train_generator = train_datagen.flow_from_directory(
@@ -74,28 +78,44 @@ print("\n[2/4] Building CNN Architecture...")
 model = tf.keras.Sequential([
     # Block 1: 32 filters
     layers.Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_SIZE, IMG_SIZE, 3)),
+    layers.BatchNormalization(),
+    layers.Conv2D(32, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Dropout(0.25),
     
     # Block 2: 64 filters
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.BatchNormalization(),
     layers.Conv2D(64, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Dropout(0.25),
     
     # Block 3: 128 filters
     layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(128, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Dropout(0.25),
     
-    # Flatten + Dense layers
+    # Block 4: 256 filters
+    layers.Conv2D(256, (3, 3), activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(256, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.4),
+    
+    # Dense layers
     layers.Flatten(),
-    layers.Dense(256, activation='relu'),
+    layers.Dense(512, activation='relu'),
+    layers.BatchNormalization(),
     layers.Dropout(0.5),
-    layers.Dense(CLASSES, activation='softmax')  # 3 output classes
+    layers.Dense(256, activation='relu'),
+    layers.Dropout(0.4),
+    layers.Dense(CLASSES, activation='softmax')
 ])
 
 model.compile(
-    optimizer='adam',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
     loss='categorical_crossentropy',
     metrics=['accuracy']
 )
@@ -108,8 +128,8 @@ print("\n[3/4] Training Model...")
 
 # Callbacks
 early_stop = EarlyStopping(
-    monitor='val_loss',
-    patience=3,
+    monitor='val_accuracy',
+    patience=7,
     restore_best_weights=True,
     verbose=1
 )
@@ -121,11 +141,19 @@ checkpoint = ModelCheckpoint(
     verbose=1
 )
 
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.5,
+    patience=3,
+    min_lr=1e-7,
+    verbose=1
+)
+
 history = model.fit(
     train_generator,
     validation_data=val_generator,
     epochs=EPOCHS,
-    callbacks=[early_stop, checkpoint],
+    callbacks=[early_stop, checkpoint, reduce_lr],
     verbose=1
 )
 
