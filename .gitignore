@@ -4,7 +4,9 @@ __pycache__/
 *$py.class
 venv/
 .env
+ai_engine/Dataset/
 ai_engine/dataset/
+ai_engine/*.h5
 ai_engine/model/*.h5
 ai_engine/model/*.pkl
 
