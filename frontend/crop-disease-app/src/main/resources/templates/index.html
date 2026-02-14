@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Detection - Upload</title>
+    
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Green Color Scheme for Agriculture */
+        body {
+            background: linear-gradient(135deg, #2E8B57 0%, #4CAF50 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .upload-container {
+            background: white;
+            border-radius: 15px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); 
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .upload-container h1 {
+            color: #2E8B57;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .upload-container p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: block;
+            margin-bottom: 25px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border: 2px dashed #4CAF50;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e8f5e9;
+            border-color: #2E8B57;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-name {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            color: #2E8B57;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .file-name.active {
+            display: block;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-btn:hover {
+            background-color: #2E8B57;
+            transform: scale(1.02);
+        }
+        
+        .upload-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .upload-container {
+                padding: 30px 20px;
+                margin: 15px;
+            }
+            
+            .upload-container h1 {
+                font-size: 24px;
+            }
+            
+            .upload-btn {
+                padding: 12px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>🌾 Crop Disease Detection</h1>
+        <p>Upload an image of your crop to get an instant diagnosis</p>
+        
+        <form method="POST" action="/" enctype="multipart/form-data">
+
+            <div class="file-input-wrapper">
+                <label for="imageInput" class="file-input-label">
+                    📁 Click to Choose Image or Drag Here
+                </label>
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <div class="file-name" id="fileName">No file selected</div>
+            </div>
+            
+            <button type="submit" class="upload-btn">⬆️ Upload & Diagnose</button>
+        </form>
+    </div>
+    
+    <!-- Script to show selected file name -->
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const fileName = document.getElementById('fileName');
+            if (e.target.files.length > 0) {
+                fileName.textContent = '✓ File selected: ' + e.target.files[0].name;
+                fileName.classList.add('active');
+            } else {
+                fileName.classList.remove('active');
+            }
+        });
+        
+        // Drag and drop support
+        const fileInputWrapper = document.querySelector('.file-input-wrapper');
+        fileInputWrapper.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            document.querySelector('.file-input-label').style.backgroundColor = '#c8e6c9';
+        });
+        
+        fileInputWrapper.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            document.querySelector('.file-input-label').style.backgroundColor = '#f0f0f0';
+        });
+        
+        fileInputWrapper.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (e.dataTransfer.files.length > 0) {
+                document.getElementById('imageInput').files = e.dataTransfer.files;
+                const event = new Event('change', { bubbles: true });
+                document.getElementById('imageInput').dispatchEvent(event);
+            }
+            document.querySelector('.file-input-label').style.backgroundColor = '#f0f0f0';
+        });
+    </script>
+    
+    <!-- Bootstrap JS (optional, for interactive components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
