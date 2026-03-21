@@ -1,0 +1,19 @@
+# Python cache/env
+.venv/
+**/__pycache__/
+*.pyc
+
+# AI training artifacts and datasets
+harvest-savior-ai/dataset/
+harvest-savior-ai/model/*.h5
+
+# Java build output
+harvest-savior-server/target/
+
+# IDE metadata
+.vscode/
+.idea/
+
+# OS noise
+.DS_Store
+Thumbs.db

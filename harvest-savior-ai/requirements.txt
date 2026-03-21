@@ -1,0 +1,33 @@
+# Harvest Savior — Python Flask AI Microservice
+# Python 3.9+ recommended
+#
+# ── IMPORTANT FOR WINDOWS USERS ─────────────────────────────────────────────
+# TensorFlow installation on Windows requires Long Path support enabled,
+# OR use a virtual environment at a SHORT path to avoid the 260-char limit.
+#
+# RECOMMENDED: run the setup script first:
+#   powershell -ExecutionPolicy Bypass -File ..\setup_training_env.ps1
+#
+# This creates C:\hs_venv with all packages correctly installed.
+# Then use C:\hs_venv\Scripts\python.exe instead of the system python.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Web Framework ────────────────────────────────────────────
+flask==3.0.2
+
+# ── Deep Learning (Training + Inference) ─────────────────────
+tensorflow
+
+# ── Image Processing ─────────────────────────────────────────
+Pillow==10.3.0
+
+# ── Scientific Computing ─────────────────────────────────────
+numpy==1.26.4
+
+# ── Training Utilities ───────────────────────────────────────
+matplotlib          # plots training accuracy/loss curves
+scikit-learn        # confusion matrix, classification report
+
+# ── Dataset Download ─────────────────────────────────────────
+kaggle              # Kaggle CLI for downloading PlantVillage dataset
+

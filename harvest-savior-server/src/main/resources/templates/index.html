@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!--
+        viewport: width=device-width ensures the page fills the phone screen.
+        initial-scale=1.0 prevents the browser from zooming out on load.
+        user-scalable=no keeps layout stable when farmer taps buttons.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2e7d32">
+    <!-- Allows app-like fullscreen on Android home screen shortcut -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Harvest Savior</title>
+    <style>
+        /* ── Reset & base ─────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f1f8e9;
+            color: #1b2e1b;
+            min-height: 100dvh;           /* dvh = dynamic viewport height on mobile */
+            display: flex;
+            flex-direction: column;
+            /* Reserve space at bottom so content clears the fixed nav bar */
+            padding-bottom: 72px;
+        }
+
+        /* ── Top header ───────────────────────────────────────────────────── */
+        header {
+            background: #2e7d32;
+            color: white;
+            padding: 16px 20px 14px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        header h1 { font-size: 1.35rem; letter-spacing: 0.5px; }
+        header p  { font-size: 0.78rem; color: #c8e6c9; margin-top: 2px; }
+
+        /* ── Page content ─────────────────────────────────────────────────── */
+        main {
+            flex: 1;
+            padding: 20px 16px;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Error banner ─────────────────────────────────────────────────── */
+        .error-box {
+            background: #ffebee;
+            border-left: 4px solid #e53935;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            color: #b71c1c;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        /* ── Image preview card ───────────────────────────────────────────── */
+        .preview-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #a5d6a7;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+        .preview-card.has-image {
+            border-style: solid;
+            border-color: #2e7d32;
+        }
+        #preview {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            display: none;
+        }
+        .preview-placeholder {
+            padding: 28px 20px;
+            text-align: center;
+        }
+        .preview-placeholder .leaf-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .preview-placeholder p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        #file-name {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            color: #555;
+            background: #f9fbe7;
+            width: 100%;
+            text-align: center;
+            border-top: 1px solid #e8f5e9;
+            display: none;
+        }
+
+        /* ── Action buttons row ───────────────────────────────────────────── */
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        /*
+         * ALL buttons must be at least 48px tall (Google's touch target minimum).
+         * Farmers often have rough hands or are in bright sunlight — bigger is better.
+         */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 54px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.1s, opacity 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active { transform: scale(0.97); opacity: 0.88; }
+
+        /* Camera button — prominent, full-width call-to-action */
+        .btn-camera {
+            background: #2e7d32;
+            color: white;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.35);
+        }
+
+        /* Gallery button — secondary */
+        .btn-gallery {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #a5d6a7;
+        }
+
+        /* Analyse button — full width, large, high contrast */
+        .btn-analyse {
+            background: #1b5e20;
+            color: white;
+            width: 100%;
+            min-height: 58px;
+            font-size: 1.05rem;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(27,94,32,0.4);
+            margin-top: 4px;
+        }
+        .btn-analyse:disabled {
+            background: #aaa;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Hidden native file inputs — triggered programmatically */
+        input[type="file"] { display: none; }
+
+        /* ── Tip banner ───────────────────────────────────────────────────── */
+        .tip {
+            background: #fff8e1;
+            border-left: 4px solid #ffa000;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #5d4037;
+            line-height: 1.5;
+            margin-top: 18px;
+        }
+        .tip strong { display: block; margin-bottom: 4px; color: #e65100; }
+
+        /* ── Bottom navigation bar ────────────────────────────────────────── */
+        /*
+         * A fixed bottom nav is far more ergonomic on mobile than a top nav:
+         * thumbs naturally reach the bottom of the screen.
+         */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 64px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #888;
+            font-size: 0.7rem;
+            gap: 3px;
+            transition: color 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-item .nav-icon { font-size: 1.4rem; }
+        .nav-item.active { color: #2e7d32; }
+        .nav-item.active .nav-icon { filter: drop-shadow(0 0 3px #a5d6a7); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌿 Harvest Savior</h1>
+    <p>AI Crop Disease Detection</p>
+</header>
+
+<main>
+
+    <!-- Error message (added by Spring Boot controller via flash attribute) -->
+    <div class="error-box" th:if="${error}" th:text="${error}"></div>
+
+    <!--
+        FORM — enctype="multipart/form-data" is mandatory for file upload.
+        Without it, only plain text is sent and the image bytes are lost entirely.
+    -->
+    <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
+
+        <!-- Image preview area -->
+        <div class="preview-card" id="previewCard">
+            <div class="preview-placeholder" id="placeholder">
+                <div class="leaf-icon">🍃</div>
+                <p>Take a photo or choose from gallery</p>
+            </div>
+            <img id="preview" src="#" alt="Leaf preview">
+            <p id="file-name"></p>
+        </div>
+
+        <!--
+            TWO input elements — same form field name "image":
+
+            1. cameraInput  → capture="environment" tells the browser to open
+               the REAR CAMERA directly (the one facing the crop/leaf).
+               On desktop browsers this falls back to a normal file picker.
+
+            2. galleryInput → standard file picker — opens the photo gallery.
+               accept="image/*" restricts to image files only.
+        -->
+        <input type="file" id="cameraInput"  name="image" accept="image/*"
+               capture="environment" onchange="handleFile(this)">
+        <input type="file" id="galleryInput" name="image" accept="image/*"
+               onchange="handleFile(this)">
+
+        <!-- "Take Photo" and "Choose from Gallery" side by side -->
+        <div class="action-row">
+            <button type="button" class="btn btn-camera"
+                    onclick="document.getElementById('cameraInput').click()">
+                <span>📷</span> Take Photo
+            </button>
+            <button type="button" class="btn btn-gallery"
+                    onclick="document.getElementById('galleryInput').click()">
+                <span>🖼️</span> Gallery
+            </button>
+        </div>
+
+        <!-- Analyse button — disabled until an image is selected -->
+        <button type="submit" class="btn btn-analyse" id="analyseBtn" disabled>
+            🔍 &nbsp;Analyse Leaf
+        </button>
+
+    </form>
+
+    <!-- Tip for farmers: how to take a good photo -->
+    <div class="tip">
+        <strong>📸 Tip for a better result:</strong>
+        Place the leaf flat on a bright surface. Make sure only the leaf is in the frame.
+        Avoid shadows and blurry shots for the most accurate diagnosis.
+    </div>
+
+</main>
+
+<!-- Bottom navigation — thumb-friendly on mobile -->
+<nav class="bottom-nav">
+    <a href="/"       class="nav-item active">
+        <span class="nav-icon">📷</span>
+        <span>Scan</span>
+    </a>
+    <a href="/history" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>History</span>
+    </a>
+</nav>
+
+<script>
+    /**
+     * Called when the farmer selects a file from either input.
+     * Shows a live preview and enables the Analyse button.
+     *
+     * FileReader.readAsDataURL() converts the image bytes to a Base64
+     * data URL that can be set as the <img> src attribute directly
+     * — no server round-trip required for previewing.
+     */
+    function handleFile(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const preview     = document.getElementById('preview');
+            const placeholder = document.getElementById('placeholder');
+            const fileNameEl  = document.getElementById('file-name');
+            const card        = document.getElementById('previewCard');
+            const analyseBtn  = document.getElementById('analyseBtn');
+
+            // Show the image preview
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            fileNameEl.textContent = file.name;
+            fileNameEl.style.display = 'block';
+            card.classList.add('has-image');
+
+            // Enable the analyse button now that we have an image
+            analyseBtn.disabled = false;
+
+            /*
+             * If the farmer used the gallery input, we must copy its file into
+             * the camera input (or vice-versa). Otherwise the form may submit
+             * the wrong input (the other one is still empty).
+             *
+             * Solution: create a DataTransfer object and assign the file to a
+             * single hidden input so the form always submits one consistent file.
+             */
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('cameraInput').files  = dt.files;
+            document.getElementById('galleryInput').files = dt.files;
+        };
+
+        reader.readAsDataURL(file);
+    }
+</script>
+
+</body>
+</html>
