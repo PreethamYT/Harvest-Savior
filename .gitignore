@@ -17,3 +17,6 @@ harvest-savior-server/target/
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Private notes
+PROJECT_REVIEW_PREP.md
