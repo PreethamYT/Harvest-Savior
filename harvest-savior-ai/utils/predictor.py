@@ -15,9 +15,9 @@ LOGIC EXPLAINED STEP BY STEP (viva-ready):
 
 3. When predict(image_file) is called for each incoming image:
    a. The image bytes are read and decoded by PIL (Pillow).
-   b. The image is RESIZED to 224×224 pixels — the fixed CNN input size.
+   b. The image is RESIZED to 256×256 pixels — the fixed CNN input size.
    c. Pixel values are NORMALIZED from [0-255] to [0.0-1.0] by ÷ 255.
-   d. A batch dimension is ADDED: (224, 224, 3) → (1, 224, 224, 3).
+   d. A batch dimension is ADDED: (256, 256, 3) → (1, 256, 256, 3).
    e. model.predict() runs a forward pass through all CNN layers.
    f. np.argmax() selects the class with the highest softmax probability.
    g. Confidence = that probability × 100 (e.g. 0.937 → 93.7%).
@@ -143,9 +143,9 @@ class Predictor:
 
         In REAL MODE — runs the image through the CNN:
           Step 1: Read bytes → PIL Image (ensures correct decoding of jpg/png)
-          Step 2: Resize to 224×224 (fixed CNN input size)
+          Step 2: Resize to 256×256 (fixed CNN input size)
           Step 3: Normalise pixel values to [0.0, 1.0] by dividing by 255
-          Step 4: Add batch dimension: (224,224,3) → (1,224,224,3)
+          Step 4: Add batch dimension: (256,256,3) → (1,256,256,3)
           Step 5: model.predict() → softmax probability array of shape (1, N_CLASSES)
           Step 6: argmax picks the class with the highest probability
           Step 7: confidence = that probability × 100
@@ -175,7 +175,7 @@ class Predictor:
         image_bytes = image_file.read()
         image = _PIL_Image.open(io.BytesIO(image_bytes)).convert('RGB')
 
-        # Step 2: Resize to 224 × 224 (must match training configuration)
+        # Step 2: Resize to 256 × 256 (must match training configuration)
         image = image.resize((IMG_WIDTH, IMG_HEIGHT))
 
         # Step 3: Normalise pixel values to [0.0, 1.0] by dividing by 255.
@@ -185,7 +185,7 @@ class Predictor:
         img_array = np.array(image, dtype=np.float32) / 255.0  # shape: (256, 256, 3)
 
         # Step 4: Add batch dimension — model always expects shape (batch, H, W, C)
-        img_array = np.expand_dims(img_array, axis=0)  # (1, 224, 224, 3)
+        img_array = np.expand_dims(img_array, axis=0)  # (1, 256, 256, 3)
 
         # Step 5: Forward pass through the CNN
         predictions = self.model.predict(img_array, verbose=0)

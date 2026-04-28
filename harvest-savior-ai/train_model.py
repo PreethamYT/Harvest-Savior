@@ -111,8 +111,8 @@ IMG_SIZE    = (IMG_HEIGHT, IMG_WIDTH)
 
 # ── Training hyper-parameters ────────────────────────────────────────────────
 BATCH_SIZE  = 32     # Number of images processed per weight update
-EPOCHS      = 30     # Maximum training epochs (early stopping may cut this short)
-FINE_TUNE_EPOCHS = 10  # Additional epochs after unfreezing MobileNetV2 top layers
+EPOCHS      = 50     # Increased to 50 for better accuracy (early stopping may still cut this short)
+FINE_TUNE_EPOCHS = 20  # Increased additional epochs after unfreezing MobileNetV2 top layers
 VAL_SPLIT   = 0.2    # 20% of data reserved for validation
 SEED        = 42     # Random seed for reproducibility
 
@@ -193,12 +193,16 @@ def build_datasets():
     # ── Augmentation layers ───────────────────────────────────────────────────
     # Applied inline as the first layers of the model so they run on the GPU.
     # RandomFlip: mirrors the image horizontally (simulates reversed leaf angle)
-    # RandomRotation: rotates up to ±10% (simulates tilted photo)
-    # RandomZoom: zooms in/out up to 10% (simulates different camera distances)
+    # RandomRotation: rotates up to ±20% (simulates tilted photo)
+    # RandomZoom: zooms in/out up to 20% (simulates different camera distances)
+    # RandomTranslation: shifts the image vertically and horizontally
+    # RandomContrast: slightly adjusts the contrast of the image
     augmentation = keras.Sequential([
-        keras.layers.RandomFlip("horizontal"),
-        keras.layers.RandomRotation(0.1),
-        keras.layers.RandomZoom(0.1),
+        keras.layers.RandomFlip("horizontal_and_vertical"),
+        keras.layers.RandomRotation(0.2),
+        keras.layers.RandomZoom(0.2),
+        keras.layers.RandomTranslation(height_factor=0.1, width_factor=0.1),
+        keras.layers.RandomContrast(factor=0.1),
     ], name="augmentation")
 
     # ── Prefetch: prepares next batch while GPU trains on current batch ───────
@@ -279,10 +283,10 @@ def train_phase_a(model, train_ds, val_ds):
     print("\n── Phase A Training (classification head only) ──────────────")
 
     callbacks = [
-        # Stop early if validation accuracy does not improve for 5 epochs
+        # Stop early if validation accuracy does not improve for 10 epochs
         keras.callbacks.EarlyStopping(
             monitor='val_accuracy',
-            patience=5,
+            patience=10,
             restore_best_weights=True,
             verbose=1
         ),
@@ -297,7 +301,7 @@ def train_phase_a(model, train_ds, val_ds):
         keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.5,
-            patience=3,
+            patience=5,
             verbose=1
         ),
     ]
@@ -341,7 +345,7 @@ def train_phase_b(model, base_model, train_ds, val_ds):
     callbacks = [
         keras.callbacks.EarlyStopping(
             monitor='val_accuracy',
-            patience=5,
+            patience=10,
             restore_best_weights=True,
             verbose=1
         ),

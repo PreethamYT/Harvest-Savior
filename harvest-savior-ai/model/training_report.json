@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-04-28T03:08:41.514767",
+  "val_loss": 0.1153,
+  "val_accuracy": 0.9629,
+  "val_accuracy_pct": 96.29,
+  "num_classes": 15,
+  "class_names": [
+    "Pepper__bell___Bacterial_spot",
+    "Pepper__bell___healthy",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Potato___healthy",
+    "Tomato_Bacterial_spot",
+    "Tomato_Early_blight",
+    "Tomato_Late_blight",
+    "Tomato_Leaf_Mold",
+    "Tomato_Septoria_leaf_spot",
+    "Tomato_Spider_mites_Two_spotted_spider_mite",
+    "Tomato__Target_Spot",
+    "Tomato__Tomato_YellowLeaf__Curl_Virus",
+    "Tomato__Tomato_mosaic_virus",
+    "Tomato_healthy"
+  ],
+  "img_size": [
+    224,
+    224
+  ],
+  "base_model": "MobileNetV2",
+  "dataset": "PlantVillage"
+}
