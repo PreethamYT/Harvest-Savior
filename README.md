@@ -1,6 +1,12 @@
 # Harvest Savior
-### AI-Based Crop Disease Detection and Remedy Recommendation System
+### AI Based Crop Disease Detection and Remedy Recommendation System
 *GRIET Academic Project — 2nd Year B.Tech*
+
+---
+
+## Project Abstract
+
+Crop diseases significantly reduce agricultural yield and threaten global food security especially for small scale farmers using low end mobile devices. This project falls under the domain of basic Artificial Intelligence and Machine Learning. To address this agricultural challenge we propose Harvest Savior which is an artificial intelligence based crop disease detection and remedy recommendation system. The software architecture utilizes a Java Spring Boot framework to seamlessly handle user interactions alongside a Python Flask microservice to perform deep learning inference. We successfully trained a MobileNetV2 Convolutional Neural Network on the prominent PlantVillage dataset applying advanced data augmentation techniques to improve visual robustness. The system resizes uploaded leaf images to specific pixel dimensions and processes them through the deep neural network to output a mathematical probability distribution representing model confidence. The expected outcome of the proposed work is a highly accurate web application that reliably identifies fifteen different crop diseases and provides actionable mitigation strategies. This immediate feedback loop empowers rural farmers to take corrective action to protect their crops and maximize their overall harvest yield.
 
 ---
 
@@ -135,9 +141,9 @@ While Spring Boot is running, visit:
 | Phase | Task | Status |
 |-------|------|--------|
 | 1 | Project scaffold (Spring Boot + Flask + CNN architecture) | ✅ Done |
-| 2 | Train CNN on PlantVillage dataset, save `crop_disease_cnn.h5` | ✅ Done |
-| 3 | Migrate from H2 to MySQL (production DB) | 🔜 Next |
-| 4 | Final UI polish, abstract + report submission | 🔜 Later |
+| 2 | Train CNN on PlantVillage dataset, save model files | ✅ Done |
+| 3 | Migrate from local H2 to MySQL (production DB) | ⏭️ Skipped (H2 optimal for local demo) |
+| 4 | Final UI polish, abstract formulation | ✅ Done (Ready for submission) |
 
 ---
 
