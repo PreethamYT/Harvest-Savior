@@ -46,9 +46,9 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'model', 'crop_diseas
 CLASS_NAMES_PATH = os.path.join(os.path.dirname(__file__), '..', 'model', 'class_names.json')
 
 # ── Input image dimensions (must match training configuration) ────────────────
-# The custom CNN in harvest_model.h5 was trained at 256×256.
-IMG_HEIGHT = 256
-IMG_WIDTH  = 256
+# The custom CNN in harvest_model.h5 was trained at 224×224.
+IMG_HEIGHT = 224
+IMG_WIDTH  = 224
 
 # ── Fallback class labels (used in DEMO MODE or before class_names.json exists) ─
 # After training, class_names.json will override this list automatically.
@@ -116,10 +116,24 @@ class Predictor:
                 from tensorflow import keras as _keras
                 self._keras = _keras
                 self._np = __import__('numpy')
-                self.model = _keras.models.load_model(MODEL_PATH)
-                print(f"[Predictor] Model loaded. Input shape: {self.model.input_shape}")
-                # Reload class names — the JSON may now exist if model just trained
+                
+                # The model config inside crop_disease_cnn.h5 has been automatically patched 
+                # to fix Keras 3 strict validation errors regarding batch_shape and positional arguments.
+                
+                class TrueDivide(_keras.layers.Layer):
+                    def call(self, inputs, y=None, **kwargs):
+                        return inputs / y if y is not None else inputs / 255.0
+                
+                class Subtract(_keras.layers.Layer):
+                    def call(self, inputs, y=None, **kwargs):
+                        return inputs - y if y is not None else inputs - 1.0
+
+                with _keras.utils.custom_object_scope({'TrueDivide': TrueDivide, 'Subtract': Subtract}):
+                    self.model = _keras.models.load_model(MODEL_PATH)
+                    
                 self.class_names = _load_class_names()
+                
+                print(f"[Predictor] Model loaded. Input shape: {self.model.input_shape}")
                 print(f"[Predictor] Model ready. Classes: {len(self.class_names)}")
             except ImportError:
                 print("[Predictor] ⚠  TensorFlow not available. Falling back to DEMO MODE.")
@@ -178,11 +192,10 @@ class Predictor:
         # Step 2: Resize to 256 × 256 (must match training configuration)
         image = image.resize((IMG_WIDTH, IMG_HEIGHT))
 
-        # Step 3: Normalise pixel values to [0.0, 1.0] by dividing by 255.
-        # WHY /255? The custom CNN was trained using ImageDataGenerator with
-        # rescale=1./255, meaning it expects float values in [0, 1].
-        # This is different from MobileNetV2 which uses [-1, 1] internally.
-        img_array = np.array(image, dtype=np.float32) / 255.0  # shape: (256, 256, 3)
+        # Step 3: Convert to Numpy array. (Do NOT divide by 255!)
+        # The model internally uses MobileNetV2's preprocess_input layer,
+        # which expects raw pixel values in the range [0.0, 255.0].
+        img_array = np.array(image, dtype=np.float32)  # shape: (224, 224, 3)
 
         # Step 4: Add batch dimension — model always expects shape (batch, H, W, C)
         img_array = np.expand_dims(img_array, axis=0)  # (1, 256, 256, 3)

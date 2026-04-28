@@ -147,7 +147,7 @@ While Spring Boot is running, visit:
 |-------|-----------|
 | Frontend / Server | Java 17, Spring Boot 3.2, Thymeleaf |
 | AI Microservice | Python 3.9, Flask 3.0 |
-| Deep Learning | TensorFlow 2.21 / Keras (MobileNetV2 CNN) |
+| Deep Learning | TensorFlow 2.16+ / Keras 3 (MobileNetV2 CNN) |
 | Dataset | PlantVillage (15 disease classes) |
 | Database | H2 (dev) → MySQL (prod) |
 | Build Tool | Maven |
